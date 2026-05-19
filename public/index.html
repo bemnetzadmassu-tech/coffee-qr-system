@@ -145,27 +145,39 @@
         // ============================================
         // AUTO-DETECTION FUNCTIONS
         // ============================================
-        async function fetchServerInfo() {
-            try {
-                const response = await fetch(`${baseUrl}/api/server-info`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    serverPort = data.port;
-                    serverIp = data.ip;
-                    localStorage.setItem('serverPort', serverPort);
-                    localStorage.setItem('serverIp', serverIp);
-                    console.log(`✅ Auto-detected server: ${data.baseUrl}`);
-                    return true;
-                }
-            } catch (error) {
-                console.log('Could not auto-detect:', error);
-                serverPort = localStorage.getItem('serverPort') || '3000';
-                serverIp = localStorage.getItem('serverIp') || '192.168.1.100';
-                return false;
-            }
+  async function fetchServerInfo() {
+    try {
+        // Use the current window location (works on Vercel)
+        const response = await fetch(`${API_URL}/api/server-info`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
         
+        const data = await response.json();
+        
+        if (data.success) {
+            // On Vercel, use the domain, not an IP
+            if (API_URL.includes('vercel.app') || API_URL.includes('https')) {
+                serverPort = data.port || 443;
+                serverIp = new URL(API_URL).hostname;
+            } else {
+                serverPort = data.port;
+                serverIp = data.ip;
+            }
+            localStorage.setItem('serverPort', serverPort);
+            localStorage.setItem('serverIp', serverIp);
+            console.log(`✅ Auto-detected server: ${API_URL}`);
+            return true;
+        }
+    } catch (error) {
+        console.log('Could not auto-detect:', error.message);
+        // Use API_URL for display instead of local IP
+        serverPort = '443';
+        serverIp = new URL(API_URL).hostname;
+        return false;
+    }
+}
         function getApiBaseUrl() {
             const hostType = document.getElementById('api-host-type')?.value || currentApiHost;
             const detectedPort = serverPort || localStorage.getItem('serverPort') || '3000';
@@ -470,7 +482,7 @@
             await loadCodes();
             updateApiInfoDisplay();
             
-            console.log(`✅ System ready! Server: ${serverIp || 'localhost'}:${serverPort || '3000'}`);
+            console.log(`✅ System ready! API: ${API_URL}`);
         });
     </script>
 </body>
