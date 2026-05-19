@@ -134,6 +134,15 @@ app.delete('/api/qr/delete/:code', (req, res) => {
         res.json({ success: true });
     });
 });
+// Serve static files from public directory
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath));
 
+// Catch-all route to serve index.html for non-API requests
+app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+        res.sendFile(path.join(publicPath, 'index.html'));
+    }
+});
 // Export for Vercel
 module.exports = app;
