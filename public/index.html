@@ -145,10 +145,9 @@
         // ============================================
         // AUTO-DETECTION FUNCTIONS
         // ============================================
-  async function fetchServerInfo() {
+ async function fetchServerInfo() {
     try {
-        // Use the current window location (works on Vercel)
-        const response = await fetch(`${API_URL}/api/server-info`);
+        const response = await fetch(`${baseUrl}/api/server-info`);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -157,24 +156,22 @@
         const data = await response.json();
         
         if (data.success) {
-            // On Vercel, use the domain, not an IP
-            if (API_URL.includes('vercel.app') || API_URL.includes('https')) {
+            if (baseUrl.includes('vercel.app') || baseUrl.includes('https')) {
                 serverPort = data.port || 443;
-                serverIp = new URL(API_URL).hostname;
+                serverIp = new URL(baseUrl).hostname;
             } else {
                 serverPort = data.port;
                 serverIp = data.ip;
             }
             localStorage.setItem('serverPort', serverPort);
             localStorage.setItem('serverIp', serverIp);
-            console.log(`✅ Auto-detected server: ${API_URL}`);
+            console.log(`✅ Auto-detected server: ${baseUrl}`);
             return true;
         }
     } catch (error) {
         console.log('Could not auto-detect:', error.message);
-        // Use API_URL for display instead of local IP
         serverPort = '443';
-        serverIp = new URL(API_URL).hostname;
+        serverIp = new URL(baseUrl).hostname;
         return false;
     }
 }
