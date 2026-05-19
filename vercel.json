@@ -5,12 +5,8 @@
             "dest": "/api/index.js"
         },
         {
-            "src": "/(.*)\\.(css|js|png|jpg|svg|ico|json)",
-            "dest": "/public/$1.$2"
-        },
-        {
             "src": "/(.*)",
-            "dest": "/public/index.html"
+            "dest": "/api/index.js"
         }
     ]
 }
