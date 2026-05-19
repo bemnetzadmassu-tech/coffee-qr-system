@@ -1,7 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const db = new sqlite3.Database('./coffee_qr.db');
+// Use /tmp for Vercel, local folder for development
+const isVercel = process.env.VERCEL === '1';
+const dbPath = isVercel ? '/tmp/coffee_qr.db' : './coffee_qr.db';
+
+const db = new sqlite3.Database(dbPath);
 
 // Initialize all tables
 db.serialize(() => {
@@ -21,7 +25,7 @@ db.serialize(() => {
         )
     `);
     
-    // Barcodes table - static product IDs
+    // Barcodes table
     db.run(`
         CREATE TABLE IF NOT EXISTS barcodes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +37,7 @@ db.serialize(() => {
         )
     `);
     
-    // Scan logs for analytics
+    // Scan logs table
     db.run(`
         CREATE TABLE IF NOT EXISTS scan_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +49,7 @@ db.serialize(() => {
         )
     `);
     
-    console.log('✅ Database initialized');
+    console.log(`✅ Database initialized at: ${dbPath}`);
 });
 
 const dbHelpers = {
