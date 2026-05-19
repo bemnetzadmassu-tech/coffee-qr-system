@@ -129,7 +129,7 @@
         </div>
     </div>
     
-   <script>
+  <script>
     // ============================================
     // CONFIGURATION
     // ============================================
@@ -140,7 +140,9 @@
     let serverPort = null;
     let serverIp = null;
     
-    let currentApiHost = localStorage.getItem('apiHostType') || 'localhost';
+    // Auto-detect if we are on Vercel
+    const isOnVercel = window.location.hostname.includes('vercel.app');
+    let currentApiHost = localStorage.getItem('apiHostType') || (isOnVercel ? 'vercel' : 'localhost');
     let currentIpAddress = localStorage.getItem('ipAddress') || '';
     let currentCustomUrl = localStorage.getItem('customUrl') || '';
     
@@ -172,25 +174,30 @@
             }
         } catch (error) {
             console.log('Could not auto-detect:', error.message);
-            serverPort = '443';
-            serverIp = new URL(baseUrl).hostname;
+            // For Vercel, set the correct values without calling localhost
+            if (isOnVercel) {
+                serverPort = '443';
+                serverIp = window.location.hostname;
+            } else {
+                serverPort = '3000';
+                serverIp = 'localhost';
+            }
             return false;
         }
     }
     
     function getApiBaseUrl() {
         const hostType = document.getElementById('api-host-type')?.value || currentApiHost;
-        const detectedPort = serverPort || localStorage.getItem('serverPort') || '3000';
-        const detectedIp = serverIp || localStorage.getItem('serverIp') || '192.168.1.100';
         
         switch(hostType) {
             case 'localhost':
-                return `http://localhost:${detectedPort}`;
+                return 'http://localhost:3000';
             case 'ip':
-                const ip = document.getElementById('ip-address')?.value || currentIpAddress || detectedIp;
-                return `http://${ip}:${detectedPort}`;
+                const ip = document.getElementById('ip-address')?.value || currentIpAddress;
+                return `http://${ip}:3000`;
             case 'vercel':
-                return 'https://coffee-qr-system.vercel.app';
+                // Use the current window location for Vercel
+                return baseUrl;
             case 'custom':
                 return document.getElementById('custom-url')?.value || currentCustomUrl;
             default:
@@ -224,7 +231,7 @@
             infoDiv.innerHTML = `
                 Current API Base URL: <strong>${apiBaseUrl}</strong><br>
                 QR codes will redirect to: ${apiBaseUrl}/api/r/YOUR_CODE<br>
-                <span style="color: green; font-size: 11px;">✅ Server: ${serverIp || 'localhost'}:${serverPort || '3000'}</span>
+                <span style="color: green; font-size: 11px;">✅ Server: ${serverIp || window.location.hostname}:${serverPort || '443'}</span>
             `;
         }
     }
@@ -440,11 +447,15 @@
             const data = await response.json();
             document.getElementById('placeholder-info').innerHTML = `
                 🔗 <strong>QR System Ready!</strong><br>
-                Enter your QR Code ID above, generate, and print.<br>
-                Use Manage tab to control where each QR code redirects.
+                Current URL: ${baseUrl}<br>
+                Status: Online
             `;
         } catch (error) {
-            document.getElementById('placeholder-info').innerHTML = `⚠️ Make sure server is running on port 3000`;
+            console.error('Placeholder error:', error);
+            document.getElementById('placeholder-info').innerHTML = `
+                ⚠️ Cannot connect to API. Please check your connection.<br>
+                Current URL: ${baseUrl}
+            `;
         }
     }
     
@@ -465,7 +476,7 @@
         
         const ipInput = document.getElementById('ip-address');
         if (ipInput) {
-            if (serverIp && !ipInput.value) {
+            if (serverIp && !ipInput.value && !isOnVercel) {
                 ipInput.value = serverIp;
                 currentIpAddress = serverIp;
                 localStorage.setItem('ipAddress', serverIp);
@@ -482,7 +493,6 @@
         await loadCodes();
         updateApiInfoDisplay();
         
-        // ✅ THIS IS THE FIXED LINE - changed API_URL to baseUrl
         console.log(`✅ System ready! Base URL: ${baseUrl}`);
     });
 </script>
