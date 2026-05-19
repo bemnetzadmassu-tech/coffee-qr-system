@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luban Coffee - QR Code Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: white; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: rgba(255,255,255,0.7); margin-bottom: 30px; }
+        .card { background: white; border-radius: 24px; padding: 30px; margin-bottom: 30px; }
+        .info-box { background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffc107; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .success-box { background: #d4edda; border: 1px solid #28a745; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 14px 30px; border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 14px 30px; border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-secondary { background: #f0f0f0; color: #333; width: auto; padding: 8px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 20px; }
+        .btn-danger { background: #dc3545; color: white; width: auto; padding: 8px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 20px; }
+        .result { margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 16px; display: none; text-align: center; }
+        .result.show { display: block; }
+        .preview img { max-width: 200px; border: 1px solid #ddd; border-radius: 12px; padding: 10px; background: white; }
+        .code-item { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+        .api-host-selector { background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #90caf9; }
+        .api-host-selector h3 { margin-top: 0; color: #1565c0; margin-bottom: 10px; }
+        .api-host-selector select, .api-host-selector input { padding: 8px; border-radius: 8px; border: 1px solid #ccc; }
+        .current-api-info { margin-top: 10px; padding: 8px; background: white; border-radius: 8px; font-family: monospace; font-size: 12px; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☕ Luban Coffee - QR Code Generator</h1>
+        <p class="subtitle">Print First — Choose Host Later — Change Destinations Anytime</p>
+        
+        <div class="card">
+            <div class="info-box" id="placeholder-info">
+                Loading...
+            </div>
+            <div class="warning-box">
+                ⚠️ <strong>IMPORTANT:</strong><br><br>
+                1. Enter your QR Code ID (e.g., TEST001, YIRG001)<br>
+                2. Generate and print the QR code<br>
+                3. Use Manage tab to set where it redirects<br>
+                4. Change destinations ANYTIME without reprinting!
+            </div>
+        </div>
+        
+        <!-- Generate QR Tab -->
+        <div class="card">
+            <h2>📱 Generate QR Code</h2>
+            <div class="warning-box" style="margin-bottom: 20px; background: #e8f5e9;">
+                ✅ <strong>IMPORTANT:</strong> Enter ONLY the ID (e.g., TEST001). The QR code will contain ONLY this ID.
+            </div>
+            <div class="form-group">
+                <label>QR Code ID</label>
+                <input type="text" id="dest-url" placeholder="TEST001, YIRG001, SIDM001">
+                <small>This ID will be printed on your coffee bag. Later you decide where it redirects!</small>
+            </div>
+            <div class="form-group">
+                <label>Custom Short Code (optional)</label>
+                <input type="text" id="short-code" placeholder="Same as above">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>QR Dark Color</label>
+                    <input type="color" id="qr-dark" value="#4A2C1A">
+                </div>
+                <div class="form-group">
+                    <label>QR Light Color</label>
+                    <input type="color" id="qr-light" value="#F5E6D3">
+                </div>
+            </div>
+            <button class="btn-primary" onclick="generateQR()">🚀 Generate QR Code</button>
+            <div id="result" class="result"></div>
+        </div>
+        
+        <!-- Manage QR Tab -->
+        <div class="card">
+            <h2>📋 Manage QR Codes</h2>
+            
+            <div class="api-host-selector">
+                <h3>🌐 API Host Configuration</h3>
+                <p style="font-size: 12px; margin-bottom: 10px;">Choose where your API is running.</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>API Host Type</label>
+                        <select id="api-host-type" onchange="updateApiHost()">
+                            <option value="localhost">🏠 Localhost</option>
+                            <option value="ip">📡 IP Address (Same WiFi)</option>
+                            <option value="vercel">🌍 Vercel (Anywhere)</option>
+                            <option value="custom">⚙️ Custom URL</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="ip-address-group" style="display: none;">
+                        <label>Your IP Address</label>
+                        <input type="text" id="ip-address" placeholder="192.168.1.100">
+                    </div>
+                    
+                    <div class="form-group" id="custom-url-group" style="display: none;">
+                        <label>Custom API URL</label>
+                        <input type="text" id="custom-url" placeholder="https://your-api.com">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="applyHostToAll()" style="width: 100%;">🔄 Apply to ALL QR Codes</button>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="refreshCurrentHost()" style="width: 100%;">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <div id="current-api-info" class="current-api-info">
+                    Current API Base: Not set
+                </div>
+            </div>
+            
+            <button class="btn-secondary" onclick="loadCodes()">🔄 Refresh QR Code List</button>
+            <div id="codes-list" style="margin-top: 20px;">Loading...</div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const baseUrl = window.location.origin;
+        let currentQR = null;
+        let serverPort = null;
+        let serverIp = null;
+        
+        let currentApiHost = localStorage.getItem('apiHostType') || 'localhost';
+        let currentIpAddress = localStorage.getItem('ipAddress') || '';
+        let currentCustomUrl = localStorage.getItem('customUrl') || '';
+        
+        // ============================================
+        // AUTO-DETECTION FUNCTIONS
+        // ============================================
+        async function fetchServerInfo() {
+            try {
+                const response = await fetch(`${baseUrl}/api/server-info`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    serverPort = data.port;
+                    serverIp = data.ip;
+                    localStorage.setItem('serverPort', serverPort);
+                    localStorage.setItem('serverIp', serverIp);
+                    console.log(`✅ Auto-detected server: ${data.baseUrl}`);
+                    return true;
+                }
+            } catch (error) {
+                console.log('Could not auto-detect:', error);
+                serverPort = localStorage.getItem('serverPort') || '3000';
+                serverIp = localStorage.getItem('serverIp') || '192.168.1.100';
+                return false;
+            }
+        }
+        
+        function getApiBaseUrl() {
+            const hostType = document.getElementById('api-host-type')?.value || currentApiHost;
+            const detectedPort = serverPort || localStorage.getItem('serverPort') || '3000';
+            const detectedIp = serverIp || localStorage.getItem('serverIp') || '192.168.1.100';
+            
+            switch(hostType) {
+                case 'localhost':
+                    return `http://localhost:${detectedPort}`;
+                case 'ip':
+                    const ip = document.getElementById('ip-address')?.value || currentIpAddress || detectedIp;
+                    return `http://${ip}:${detectedPort}`;
+                case 'vercel':
+                    return 'https://coffee-qr-system.vercel.app';
+                case 'custom':
+                    return document.getElementById('custom-url')?.value || currentCustomUrl;
+                default:
+                    return baseUrl;
+            }
+        }
+        
+        function updateApiHost() {
+            const hostType = document.getElementById('api-host-type').value;
+            currentApiHost = hostType;
+            localStorage.setItem('apiHostType', hostType);
+            
+            document.getElementById('ip-address-group').style.display = hostType === 'ip' ? 'block' : 'none';
+            document.getElementById('custom-url-group').style.display = hostType === 'custom' ? 'block' : 'none';
+            
+            if (hostType === 'ip') {
+                const savedIp = localStorage.getItem('ipAddress');
+                if (savedIp) document.getElementById('ip-address').value = savedIp;
+            }
+            if (hostType === 'custom') {
+                const savedUrl = localStorage.getItem('customUrl');
+                if (savedUrl) document.getElementById('custom-url').value = savedUrl;
+            }
+            updateApiInfoDisplay();
+        }
+        
+        function updateApiInfoDisplay() {
+            const baseUrl = getApiBaseUrl();
+            const infoDiv = document.getElementById('current-api-info');
+            if (infoDiv) {
+                infoDiv.innerHTML = `
+                    Current API Base URL: <strong>${baseUrl}</strong><br>
+                    QR codes will redirect to: ${baseUrl}/api/r/YOUR_CODE<br>
+                    <span style="color: green; font-size: 11px;">✅ Server: ${serverIp || 'localhost'}:${serverPort || '3000'}</span>
+                `;
+            }
+        }
+        
+        function saveIpAddress() {
+            const ip = document.getElementById('ip-address').value;
+            if (ip) {
+                localStorage.setItem('ipAddress', ip);
+                currentIpAddress = ip;
+                updateApiInfoDisplay();
+                alert(`✅ IP Address saved: ${ip}`);
+            }
+        }
+        
+        function saveCustomUrl() {
+            const url = document.getElementById('custom-url').value;
+            if (url) {
+                localStorage.setItem('customUrl', url);
+                currentCustomUrl = url;
+                updateApiInfoDisplay();
+                alert(`✅ Custom URL saved: ${url}`);
+            }
+        }
+        
+        async function applyHostToAll() {
+            const baseUrl = getApiBaseUrl();
+            if (!confirm(`Apply ${baseUrl} to ALL QR codes?`)) return;
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/qr/list`);
+                const data = await response.json();
+                if (!data.codes || data.codes.length === 0) {
+                    alert('No QR codes found');
+                    return;
+                }
+                
+                let updated = 0;
+                for (const code of data.codes) {
+                    const newDestination = `${baseUrl}/api/r/${code.code}`;
+                    const updateResponse = await fetch(`${baseUrl}/api/qr/update/${code.code}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ destinationUrl: newDestination })
+                    });
+                    if (updateResponse.ok) updated++;
+                }
+                alert(`✅ Updated ${updated} of ${data.codes.length} QR codes`);
+                loadCodes();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        function refreshCurrentHost() {
+            updateApiInfoDisplay();
+            loadCodes();
+        }
+        
+        // ============================================
+        // GENERATE QR CODE
+        // ============================================
+        async function generateQR() {
+            const qrId = document.getElementById('dest-url').value;
+            const shortCode = document.getElementById('short-code').value;
+            const qrDark = document.getElementById('qr-dark').value;
+            const qrLight = document.getElementById('qr-light').value;
+            
+            if (!qrId) {
+                alert('Enter a QR Code ID (e.g., TEST001)');
+                return;
+            }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/qr/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: qrId,
+                        customCode: shortCode || qrId,
+                        dataType: 'url',
+                        qrDarkColor: qrDark,
+                        qrLightColor: qrLight
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
+                currentQR = data;
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="preview"><img src="${data.image}" alt="QR Code"></div>
+                    <p><strong>QR Contains:</strong> <code>${data.content}</code></p>
+                    <p><strong>Short Code:</strong> <code>${data.code}</code></p>
+                    <div class="success-box">
+                        ✅ <strong>QR Code Generated!</strong><br><br>
+                        Print this QR code on your coffee bags.<br>
+                        Use the Manage tab to set where it redirects.<br>
+                        <strong>You can change the destination ANYTIME without reprinting!</strong>
+                    </div>
+                    <button class="btn-secondary" onclick="downloadQR()">📥 Download QR Code</button>
+                `;
+                document.getElementById('result').classList.add('show');
+                loadCodes();
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Generate QR Code';
+            }
+        }
+        
+        function downloadQR() {
+            if (currentQR?.image) {
+                const link = document.createElement('a');
+                link.download = `${currentQR.code || 'qr'}.png`;
+                link.href = currentQR.image;
+                link.click();
+            }
+        }
+        
+        // ============================================
+        // LOAD AND MANAGE CODES
+        // ============================================
+        async function loadCodes() {
+            try {
+                const response = await fetch(`${baseUrl}/api/qr/list`);
+                const data = await response.json();
+                
+                if (!data.codes || data.codes.length === 0) {
+                    document.getElementById('codes-list').innerHTML = '<p>No QR codes yet. Generate some!</p>';
+                    return;
+                }
+                
+                const apiBaseUrl = getApiBaseUrl();
+                
+                let html = '';
+                for (const code of data.codes) {
+                    const fullRedirectUrl = `${apiBaseUrl}/api/r/${code.code}`;
+                    html += `
+                        <div class="code-item">
+                            <div><strong>📱 ${code.code}</strong></div>
+                            <div style="font-size: 12px; margin-top: 5px;">🎯 Current destination: ${code.destination_url || 'Not set'}</div>
+                            <div style="font-size: 11px; color: #666; margin-top: 3px;">🔗 API redirect URL: ${fullRedirectUrl}</div>
+                            <div style="font-size: 12px;">📊 Scans: ${code.scan_count || 0}</div>
+                            <div style="margin-top: 10px;">
+                                <input type="text" id="edit-${code.code}" placeholder="Final destination URL (e.g., https://google.com)" style="padding: 6px; width: 250px;">
+                                <button class="btn-secondary" onclick="updateCode('${code.code}')">✏️ Update</button>
+                                <button class="btn-danger" onclick="deleteCode('${code.code}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('codes-list').innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('codes-list').innerHTML = '<p>Error loading codes</p>';
+            }
+        }
+        
+        async function updateCode(shortCode) {
+            const newUrl = document.getElementById(`edit-${shortCode}`).value;
+            if (!newUrl) {
+                alert('Enter a destination URL');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/qr/update/${shortCode}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ destinationUrl: newUrl })
+                });
+                
+                if (response.ok) {
+                    alert(`✅ Updated! QR code ${shortCode} now redirects to: ${newUrl}`);
+                    loadCodes();
+                } else {
+                    alert('Update failed');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function deleteCode(shortCode) {
+            if (!confirm(`Delete QR code ${shortCode}?`)) return;
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/qr/delete/${shortCode}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert(`✅ Deleted ${shortCode}`);
+                    loadCodes();
+                } else {
+                    alert('Delete failed');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function loadPlaceholder() {
+            try {
+                const response = await fetch(`${baseUrl}/api/placeholder`);
+                const data = await response.json();
+                document.getElementById('placeholder-info').innerHTML = `
+                    🔗 <strong>QR System Ready!</strong><br>
+                    Enter your QR Code ID above, generate, and print.<br>
+                    Use Manage tab to control where each QR code redirects.
+                `;
+            } catch (error) {
+                document.getElementById('placeholder-info').innerHTML = `⚠️ Make sure server is running on port 3000`;
+            }
+        }
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Luban Coffee QR System - Initializing...');
+            console.log('📍 Base URL:', baseUrl);
+            
+            await fetchServerInfo();
+            
+            const hostSelect = document.getElementById('api-host-type');
+            if (hostSelect) {
+                hostSelect.value = currentApiHost;
+                updateApiHost();
+            }
+            
+            const ipInput = document.getElementById('ip-address');
+            if (ipInput) {
+                if (serverIp && !ipInput.value) {
+                    ipInput.value = serverIp;
+                    currentIpAddress = serverIp;
+                    localStorage.setItem('ipAddress', serverIp);
+                }
+                ipInput.addEventListener('change', saveIpAddress);
+            }
+            
+            const customUrlInput = document.getElementById('custom-url');
+            if (customUrlInput) {
+                customUrlInput.addEventListener('change', saveCustomUrl);
+            }
+            
+            await loadPlaceholder();
+            await loadCodes();
+            updateApiInfoDisplay();
+            
+            console.log(`✅ System ready! Server: ${serverIp || 'localhost'}:${serverPort || '3000'}`);
+        });
+    </script>
+</body>
+</html>
