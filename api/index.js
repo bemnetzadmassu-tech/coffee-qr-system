@@ -157,7 +157,28 @@ app.delete('/api/qr/delete/:code', (req, res) => {
         res.json({ success: true });
     });
 });
-
+// This endpoint handles both formats
+app.get('/api/r/:code', async (req, res) => {
+    const { code } = req.params;
+    
+    // If the code is a full URL, extract the ID
+    let lookupCode = code;
+    if (code.startsWith('http')) {
+        // Extract ID from URL like https://.../api/r/LUBAN001
+        const match = code.match(/\/api\/r\/([^\/]+)/);
+        if (match) lookupCode = match[1];
+    }
+    
+    console.log(`📱 Looking up: ${lookupCode}`);
+    
+    const qrData = await db.getQRCode(lookupCode);
+    
+    if (!qrData) {
+        return res.status(404).send('QR code not found');
+    }
+    
+    res.redirect(qrData.destination_url);
+});
 // Serve static files from public directory
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
