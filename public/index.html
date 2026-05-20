@@ -30,6 +30,7 @@
         .api-host-selector h3 { margin-top: 0; color: #1565c0; margin-bottom: 10px; }
         .api-host-selector select, .api-host-selector input { padding: 8px; border-radius: 8px; border: 1px solid #ccc; }
         .current-api-info { margin-top: 10px; padding: 8px; background: white; border-radius: 8px; font-family: monospace; font-size: 12px; }
+        .preset-colors { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
         @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -57,41 +58,71 @@
             <div class="warning-box" style="margin-bottom: 20px; background: #e8f5e9;">
                 ✅ <strong>IMPORTANT:</strong> Enter ONLY the ID (e.g., TEST001). The QR code will contain ONLY this ID.
             </div>
-        <div class="form-group">
-    <label>QR Dark Color</label>
-    <div class="form-row" style="margin-bottom: 10px;">
-        <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 12px;">HEX</label>
-            <input type="color" id="qr-dark" value="#4A2C1A" style="height: 40px;">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 12px;">RGB</label>
-            <input type="text" id="qr-dark-rgb" placeholder="R,G,B" value="74,44,26" style="padding: 8px;">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 12px;">Preview</label>
-            <div id="dark-preview" style="width: 40px; height: 40px; background: #4A2C1A; border-radius: 8px; border: 1px solid #ddd;"></div>
-        </div>
-    </div>
-</div>
+            
+            <!-- QR CODE ID FIELD -->
+            <div class="form-group">
+                <label>QR Code ID (what goes inside the QR)</label>
+                <input type="text" id="dest-url" placeholder="TEST001, LUBAN001, YIRG001 etc.">
+                <small>This ID will be printed on your coffee bag. Later you decide where it redirects!</small>
+            </div>
+            
+            <!-- CUSTOM SHORT CODE FIELD -->
+            <div class="form-group">
+                <label>Custom Short Code (for database - same as above or different)</label>
+                <input type="text" id="short-code" placeholder="TEST001">
+                <small>This is stored in your database to control the redirect</small>
+            </div>
+            
+            <!-- COLOR PICKERS -->
+            <div class="form-group">
+                <label>QR Dark Color</label>
+                <div class="form-row" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px;">HEX</label>
+                        <input type="color" id="qr-dark" value="#4A2C1A" style="height: 40px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px;">RGB</label>
+                        <input type="text" id="qr-dark-rgb" placeholder="R,G,B" value="74,44,26" style="padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px;">Preview</label>
+                        <div id="dark-preview" style="width: 40px; height: 40px; background: #4A2C1A; border-radius: 8px; border: 1px solid #ddd;"></div>
+                    </div>
+                </div>
+            </div>
 
-<div class="form-group">
-    <label>QR Light Color</label>
-    <div class="form-row" style="margin-bottom: 10px;">
-        <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 12px;">HEX</label>
-            <input type="color" id="qr-light" value="#F5E6D3" style="height: 40px;">
+            <div class="form-group">
+                <label>QR Light Color</label>
+                <div class="form-row" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px;">HEX</label>
+                        <input type="color" id="qr-light" value="#F5E6D3" style="height: 40px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px;">RGB</label>
+                        <input type="text" id="qr-light-rgb" placeholder="R,G,B" value="245,230,211" style="padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px;">Preview</label>
+                        <div id="light-preview" style="width: 40px; height: 40px; background: #F5E6D3; border-radius: 8px; border: 1px solid #ddd;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PRESET COLORS -->
+            <div class="preset-colors">
+                <button type="button" class="btn-secondary" onclick="setPreset('#4A2C1A', '#F5E6D3')">☕ Coffee Brown</button>
+                <button type="button" class="btn-secondary" onclick="setPreset('#000000', '#FFFFFF')">⚫ Black & White</button>
+                <button type="button" class="btn-secondary" onclick="setPreset('#8B4513', '#FFF8E7')">🌰 Yirgacheffe</button>
+                <button type="button" class="btn-secondary" onclick="setPreset('#2E7D32', '#FFFFFF')">🌿 Sidama Green</button>
+                <button type="button" class="btn-secondary" onclick="setPreset('#6A1B9A', '#FFFFFF')">🍇 Guji Purple</button>
+            </div>
+            
+            <button class="btn-primary" onclick="generateQR()">🚀 Generate QR Code</button>
+            <div id="result" class="result"></div>
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 12px;">RGB</label>
-            <input type="text" id="qr-light-rgb" placeholder="R,G,B" value="245,230,211" style="padding: 8px;">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 12px;">Preview</label>
-            <div id="light-preview" style="width: 40px; height: 40px; background: #F5E6D3; border-radius: 8px; border: 1px solid #ddd;"></div>
-        </div>
-    </div>
-</div>
+        
         <!-- Manage QR Tab -->
         <div class="card">
             <h2>📋 Manage QR Codes</h2>
@@ -138,17 +169,10 @@
             
             <button class="btn-secondary" onclick="loadCodes()">🔄 Refresh QR Code List</button>
             <div id="codes-list" style="margin-top: 20px;">Loading...</div>
-            <div class="preset-colors" style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
-    <button type="button" class="btn-secondary" onclick="setPreset('#4A2C1A', '#F5E6D3')">☕ Coffee Brown</button>
-    <button type="button" class="btn-secondary" onclick="setPreset('#000000', '#FFFFFF')">⚫ Black & White</button>
-    <button type="button" class="btn-secondary" onclick="setPreset('#8B4513', '#FFF8E7')">🌰 Yirgacheffe</button>
-    <button type="button" class="btn-secondary" onclick="setPreset('#2E7D32', '#FFFFFF')">🌿 Sidama Green</button>
-    <button type="button" class="btn-secondary" onclick="setPreset('#6A1B9A', '#FFFFFF')">🍇 Guji Purple</button>
-</div>
         </div>
     </div>
     
-  <script>
+    <script>
     // ============================================
     // CONFIGURATION
     // ============================================
@@ -164,67 +188,72 @@
     let currentApiHost = localStorage.getItem('apiHostType') || (isOnVercel ? 'vercel' : 'localhost');
     let currentIpAddress = localStorage.getItem('ipAddress') || '';
     let currentCustomUrl = localStorage.getItem('customUrl') || '';
+    
     // ============================================
-// COLOR CONVERSION FUNCTIONS
-// ============================================
-function setPreset(darkHex, lightHex) {
-    document.getElementById('qr-dark').value = darkHex;
-    document.getElementById('qr-light').value = lightHex;
-    updateDarkColor();
-    updateLightColor();
-}
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : { r: 74, g: 44, b: 26 };
-}
-
-function rgbToHex(r, g, b) {
-    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-
-function updateDarkColor() {
-    const hexColor = document.getElementById('qr-dark').value;
-    const rgb = hexToRgb(hexColor);
-    document.getElementById('qr-dark-rgb').value = `${rgb.r},${rgb.g},${rgb.b}`;
-    document.getElementById('dark-preview').style.backgroundColor = hexColor;
-}
-
-function updateDarkColorFromRgb() {
-    const rgbValue = document.getElementById('qr-dark-rgb').value;
-    const parts = rgbValue.split(',').map(Number);
-    if (parts.length === 3 && !parts.some(isNaN)) {
-        const hex = rgbToHex(parts[0], parts[1], parts[2]);
-        document.getElementById('qr-dark').value = hex;
-        document.getElementById('dark-preview').style.backgroundColor = hex;
+    // COLOR CONVERSION FUNCTIONS
+    // ============================================
+    function setPreset(darkHex, lightHex) {
+        document.getElementById('qr-dark').value = darkHex;
+        document.getElementById('qr-light').value = lightHex;
+        updateDarkColor();
+        updateLightColor();
     }
-}
-
-function updateLightColor() {
-    const hexColor = document.getElementById('qr-light').value;
-    const rgb = hexToRgb(hexColor);
-    document.getElementById('qr-light-rgb').value = `${rgb.r},${rgb.g},${rgb.b}`;
-    document.getElementById('light-preview').style.backgroundColor = hexColor;
-}
-
-function updateLightColorFromRgb() {
-    const rgbValue = document.getElementById('qr-light-rgb').value;
-    const parts = rgbValue.split(',').map(Number);
-    if (parts.length === 3 && !parts.some(isNaN)) {
-        const hex = rgbToHex(parts[0], parts[1], parts[2]);
-        document.getElementById('qr-light').value = hex;
-        document.getElementById('light-preview').style.backgroundColor = hex;
+    
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 74, g: 44, b: 26 };
     }
-}
 
-// Add event listeners
-document.getElementById('qr-dark').addEventListener('input', updateDarkColor);
-document.getElementById('qr-dark-rgb').addEventListener('input', updateDarkColorFromRgb);
-document.getElementById('qr-light').addEventListener('input', updateLightColor);
-document.getElementById('qr-light-rgb').addEventListener('input', updateLightColorFromRgb);
+    function rgbToHex(r, g, b) {
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    function updateDarkColor() {
+        const hexColor = document.getElementById('qr-dark').value;
+        const rgb = hexToRgb(hexColor);
+        document.getElementById('qr-dark-rgb').value = `${rgb.r},${rgb.g},${rgb.b}`;
+        document.getElementById('dark-preview').style.backgroundColor = hexColor;
+    }
+
+    function updateDarkColorFromRgb() {
+        const rgbValue = document.getElementById('qr-dark-rgb').value;
+        const parts = rgbValue.split(',').map(Number);
+        if (parts.length === 3 && !parts.some(isNaN)) {
+            const hex = rgbToHex(parts[0], parts[1], parts[2]);
+            document.getElementById('qr-dark').value = hex;
+            document.getElementById('dark-preview').style.backgroundColor = hex;
+        }
+    }
+
+    function updateLightColor() {
+        const hexColor = document.getElementById('qr-light').value;
+        const rgb = hexToRgb(hexColor);
+        document.getElementById('qr-light-rgb').value = `${rgb.r},${rgb.g},${rgb.b}`;
+        document.getElementById('light-preview').style.backgroundColor = hexColor;
+    }
+
+    function updateLightColorFromRgb() {
+        const rgbValue = document.getElementById('qr-light-rgb').value;
+        const parts = rgbValue.split(',').map(Number);
+        if (parts.length === 3 && !parts.some(isNaN)) {
+            const hex = rgbToHex(parts[0], parts[1], parts[2]);
+            document.getElementById('qr-light').value = hex;
+            document.getElementById('light-preview').style.backgroundColor = hex;
+        }
+    }
+
+    // Add event listeners for color pickers
+    if (document.getElementById('qr-dark')) {
+        document.getElementById('qr-dark').addEventListener('input', updateDarkColor);
+        document.getElementById('qr-dark-rgb').addEventListener('input', updateDarkColorFromRgb);
+        document.getElementById('qr-light').addEventListener('input', updateLightColor);
+        document.getElementById('qr-light-rgb').addEventListener('input', updateLightColorFromRgb);
+    }
+    
     // ============================================
     // AUTO-DETECTION FUNCTIONS
     // ============================================
@@ -253,7 +282,6 @@ document.getElementById('qr-light-rgb').addEventListener('input', updateLightCol
             }
         } catch (error) {
             console.log('Could not auto-detect:', error.message);
-            // For Vercel, set the correct values without calling localhost
             if (isOnVercel) {
                 serverPort = '443';
                 serverIp = window.location.hostname;
@@ -275,7 +303,6 @@ document.getElementById('qr-light-rgb').addEventListener('input', updateLightCol
                 const ip = document.getElementById('ip-address')?.value || currentIpAddress;
                 return `http://${ip}:3000`;
             case 'vercel':
-                // Use the current window location for Vercel
                 return baseUrl;
             case 'custom':
                 return document.getElementById('custom-url')?.value || currentCustomUrl;
@@ -574,6 +601,6 @@ document.getElementById('qr-light-rgb').addEventListener('input', updateLightCol
         
         console.log(`✅ System ready! Base URL: ${baseUrl}`);
     });
-</script>
+    </script>
 </body>
 </html>
