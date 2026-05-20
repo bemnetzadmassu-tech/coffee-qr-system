@@ -3,14 +3,12 @@
         {
             "source": "/api/r/(.*)",
             "destination": "https://qr.lubancoffee.com/api/r/$1",
-            "permanent": true,
-            "statusCode": 301
+            "permanent": true
         },
         {
             "source": "/scan/(.*)",
             "destination": "https://qr.lubancoffee.com/scan/$1",
-            "permanent": true,
-            "statusCode": 301
+            "permanent": true
         }
     ],
     "routes": [
