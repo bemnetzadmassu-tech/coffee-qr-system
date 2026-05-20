@@ -1,11 +1,4 @@
 {
-    "redirects": [
-        {
-            "source": "/api/r/(.*)",
-            "destination": "https://qr.lubancoffee.com/api/r/$1",
-            "permanent": true
-        }
-    ],
     "routes": [
         {
             "src": "/api/(.*)",
