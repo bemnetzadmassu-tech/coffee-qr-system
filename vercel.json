@@ -1,4 +1,18 @@
 {
+    "redirects": [
+        {
+            "source": "/api/r/(.*)",
+            "destination": "https://qr.lubancoffee.com/api/r/$1",
+            "permanent": true,
+            "statusCode": 301
+        },
+        {
+            "source": "/scan/(.*)",
+            "destination": "https://qr.lubancoffee.com/scan/$1",
+            "permanent": true,
+            "statusCode": 301
+        }
+    ],
     "routes": [
         {
             "src": "/api/(.*)",
@@ -6,7 +20,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "/api/index.js"
+            "dest": "/public/$1"
         }
     ]
 }
